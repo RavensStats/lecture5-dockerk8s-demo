@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager | Lecture 5 Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fafafa;
+            color: #0a0a0a;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        /* Header */
+        header {
+            padding: 32px 0;
+            border-bottom: 1px solid #e5e5e5;
+            margin-bottom: 32px;
+        }
+        
+        header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        header p {
+            color: #737373;
+            font-size: 14px;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #f4f4f5;
+            border: 1px solid #e5e5e5;
+            color: #52525b;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 12px;
+        }
+        
+        /* Status Cards */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .status-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .status-card h3 {
+            font-size: 12px;
+            font-weight: 500;
+            color: #737373;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .status-card .value {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .dot.green { background: #22c55e; }
+        .dot.red { background: #ef4444; }
+        
+        .cache-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .cache-tag.hit { background: #dcfce7; color: #166534; }
+        .cache-tag.miss { background: #fef9c3; color: #854d0e; }
+        
+        .stats-detail {
+            font-size: 12px;
+            color: #737373;
+            margin-top: 4px;
+        }
+        
+        /* Flash Messages */
+        .flash {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        
+        .flash.success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+        
+        .flash.error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+        
+        /* Add Form */
+        .card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .card h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0a0a0a;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: #0a0a0a;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #262626;
+        }
+        
+        .btn-add {
+            align-self: flex-end;
+            white-space: nowrap;
+        }
+        
+        /* Tasks List */
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .tasks-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .task-item {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            transition: border-color 0.15s;
+        }
+        
+        .task-item:hover {
+            border-color: #a1a1aa;
+        }
+        
+        .task-item.completed {
+            opacity: 0.6;
+        }
+        
+        .task-item.completed .task-title {
+            text-decoration: line-through;
+        }
+        
+        .task-info {
+            flex: 1;
+        }
+        
+        .task-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .task-desc {
+            font-size: 13px;
+            color: #737373;
+        }
+        
+        .task-tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        
+        .tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .tag.high { background: #fef2f2; color: #991b1b; }
+        .tag.medium { background: #fef9c3; color: #854d0e; }
+        .tag.low { background: #f0fdf4; color: #166534; }
+        
+        .tag.pending { background: #f4f4f5; color: #52525b; }
+        .tag.in_progress { background: #dbeafe; color: #1e40af; }
+        .tag.completed { background: #dcfce7; color: #166534; }
+        
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .task-actions select {
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .btn-delete {
+            background: white;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        
+        .btn-delete:hover {
+            background: #fef2f2;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: #737373;
+        }
+        
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+        
+        /* Architecture Section */
+        .arch-section {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e5e5;
+        }
+        
+        .arch-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #737373;
+            margin-bottom: 16px;
+        }
+        
+        .arch-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .arch-box {
+            text-align: center;
+            padding: 16px 24px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .arch-box img {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 8px;
+            object-fit: contain;
+        }
+        
+        .arch-box strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .arch-box small {
+            color: #737373;
+            font-size: 12px;
+        }
+        
+        .arch-box code {
+            display: block;
+            margin-top: 6px;
+            background: #f4f4f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #0a0a0a;
+        }
+        
+        .arch-arrow {
+            display: flex;
+            align-items: center;
+            color: #d1d5db;
+            font-size: 20px;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 32px 0;
+            color: #737373;
+            font-size: 13px;
+            margin-top: 40px;
+            border-top: 1px solid #e5e5e5;
+        }
+        
+        footer a {
+            color: #0a0a0a;
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 600px) {
+            .form-row { flex-direction: column; }
+            .task-item { flex-direction: column; align-items: flex-start; }
+            .task-actions { width: 100%; justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Task Manager</h1>
+            <p>Lecture 5: Docker & Kubernetes Demo</p>
+            <span class="badge">🐳 Running in Docker</span>
+        </header>
+        
+        <!-- Status Cards -->
+        <div class="status-grid">
+            <div class="status-card">
+                <h3>PostgreSQL</h3>
+                <div class="value">
+                    <span class="dot {{ 'green' if db_status == 'connected' else 'red' }}"></span>
+                    {{ db_status | capitalize }}
+                </div>
+            </div>
+            <div class="status-card">
+                <h3>Redis Cache</h3>
+                <div class="value">
+                    <span class="dot {{ 'green' if cache_status == 'connected' else 'red' }}"></span>
+                    {{ cache_status | capitalize }}
+                    {% if cache_hit %}
+                    <span class="cache-tag hit">HIT</span>
+                    {% elif cache_status == 'connected' %}
+                    <span class="cache-tag miss">MISS</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="status-card">
+                <h3>Tasks</h3>
+                <div class="value">{{ stats.total }}</div>
+                <div class="stats-detail">
+                    {{ stats.pending }} pending · {{ stats.in_progress }} active · {{ stats.completed }} done
+                </div>
+            </div>
+        </div>
+        
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        
+        <!-- Add Task Form -->
+        <div class="card">
+            <h2>Add Task</h2>
+            <form action="{{ url_for('add_task') }}" method="POST">
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <label for="title">Title</label>
+                        <input type="text" id="title" name="title" placeholder="What needs to be done?" required>
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" name="description" placeholder="Optional details...">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="priority">Priority</label>
+                        <select id="priority" name="priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-add">Add</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Tasks List -->
+        <div class="tasks-header">
+            <h2>Tasks</h2>
+        </div>
+        
+        {% if tasks %}
+        {% for task in tasks %}
+        <div class="task-item {{ 'completed' if task.status == 'completed' else '' }}">
+            <div class="task-info">
+                <div class="task-title">{{ task.title }}</div>
+                {% if task.description %}
+                <div class="task-desc">{{ task.description }}</div>
+                {% endif %}
+                <div class="task-tags">
+                    <span class="tag {{ task.priority }}">{{ task.priority }}</span>
+                    <span class="tag {{ task.status }}">{{ task.status | replace('_', ' ') }}</span>
+                </div>
+            </div>
+            <div class="task-actions">
+                <form action="{{ url_for('update_task', task_id=task.id) }}" method="POST" style="display: inline;">
+                    <select name="status" onchange="this.form.submit()">
+                        <option value="pending" {{ 'selected' if task.status == 'pending' else '' }}>Pending</option>
+                        <option value="in_progress" {{ 'selected' if task.status == 'in_progress' else '' }}>In Progress</option>
+                        <option value="completed" {{ 'selected' if task.status == 'completed' else '' }}>Completed</option>
+                    </select>
+                </form>
+                <form action="{{ url_for('delete_task', task_id=task.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn-delete" onclick="return confirm('Delete?')">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <p>No tasks yet. Add one above to get started.</p>
+        </div>
+        {% endif %}
+        
+        <!-- Architecture Overview -->
+        <div class="arch-section">
+            <h3>Architecture</h3>
+            <div class="arch-boxes">
+                <div class="arch-box">
+                    <img src="/assets/flask.png" alt="Flask">
+                    <strong>Web App</strong>
+                    <small>Flask</small>
+                    <code>:5000</code>
+                </div>
+                <span class="arch-arrow">↔</span>
+                <div class="arch-box">
+                    <img src="/assets/redis.png" alt="Redis">
+                    <strong>Cache</strong>
+                    <small>Redis</small>
+                    <code>:6379</code>
+                </div>
+                <span class="arch-arrow">↔</span>
+                <div class="arch-box">
+                    <img src="/assets/postgresql.png" alt="PostgreSQL">
+                    <strong>Database</strong>
+                    <small>PostgreSQL</small>
+                    <code>:5432</code>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>University of Bern · DevOps for Cyber-Physical Systems</p>
+            <p style="margin-top: 8px;">
+                <a href="/health">Health Check</a> · <a href="/info">Environment Info</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

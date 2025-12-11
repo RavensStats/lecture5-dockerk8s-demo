@@ -1,0 +1,104 @@
+# ============================================================
+# Lecture 5: Docker Compose Demo
+# DevOps for Cyber-Physical Systems | University of Bern
+# ============================================================
+# Multi-tier application: Web + Database + Cache
+#
+# Start:  docker compose up
+# Stop:   docker compose down
+# ============================================================
+
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------
+  # WEB APPLICATION
+  # ----------------------------------------------------------
+  web:
+    build: .
+    container_name: lecture5-web
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_DEBUG=true
+      - SECRET_KEY=lecture5-demo-key
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=taskdb
+      - DB_USER=taskuser
+      - DB_PASSWORD=taskpass
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./app.py:/app/app.py:ro
+      - ./templates:/app/templates:ro
+      - ./assets:/app/assets:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ----------------------------------------------------------
+  # DATABASE (PostgreSQL)
+  # ----------------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: lecture5-db
+    environment:
+      - POSTGRES_DB=taskdb
+      - POSTGRES_USER=taskuser
+      - POSTGRES_PASSWORD=taskpass
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskuser -d taskdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ----------------------------------------------------------
+  # CACHE (Redis)
+  # ----------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: lecture5-redis
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+# ============================================================
+# NETWORKS
+# ============================================================
+networks:
+  app-network:
+    driver: bridge
+    name: lecture5-network
+
+# ============================================================
+# VOLUMES
+# ============================================================
+volumes:
+  postgres-data:
+    name: lecture5-postgres-data
+  redis-data:
+    name: lecture5-redis-data
