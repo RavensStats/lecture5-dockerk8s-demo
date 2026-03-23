@@ -9,7 +9,32 @@
 # STEP 1: Start with official Python image
 # ----------------------------------------------------------
 # We use the slim variant for smaller size (~150MB vs ~900MB)
-FROM python:3.11-slim
+FROM python:3.11-alpine
+RUN apk add --no-cache gcc musl-dev linux-headers
+
+                            # FROM python:3.11-slim
+                            # RUN apt-get update && apt-get install -y gcc
+
+                            # FROM python:3.11-alpine
+                            # RUN apk add --no-cache gcc musl-dev linux-headers
+                            # docker build -t myapp:alpine -f Dockerfile .
+
+
+                            #BUILD TO PUBLISH
+                            # docker build -t task-app:v1.0 .
+                            # docker login
+                            # docker tag task-app:v1.0 climbtheswissapps/task-app:v1.0
+                            # docker push climbtheswissapps/task-app:v1.0
+
+
+                            #DIAGNOSTICS
+                            # docker compose logs web
+                                # Show output & errors of "web" container
+                                # use -f to follow logs in real-time
+                            # docker inspect lecture5-web
+                                #Returns full JSON details about the container (config, network, mounts, etc.)
+                            # docker stats
+                                #Live resource usage (CPU, memory) of running containers (Task Manager)
 
 # STEP 2: Set the working directory
 # ----------------------------------------------------------

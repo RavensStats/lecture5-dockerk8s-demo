@@ -276,11 +276,12 @@ def health():
 
 @app.route('/info')
 def info():
-    """Show environment info - demonstrates Docker env vars"""
+    """Combined route for environment info and Pod identification"""
     return jsonify({
         'app': 'DevOps Lecture 5 Demo',
         'version': '1.0.0',
-        'pod_name': socket.gethostname(),
+        # socket.gethostname() is the gold standard for getting the Pod ID in K8s
+        'pod_name': socket.gethostname(), 
         'environment': {
             'DB_HOST': DB_HOST,
             'DB_PORT': DB_PORT,

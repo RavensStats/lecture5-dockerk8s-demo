@@ -1,5 +1,147 @@
 # Lecture 5: Docker & Kubernetes Demo
 
+#FORKED REPO
+https://github.com/RavensStats/lecture5-dockerk8s-demo
+
+#DockerHub ID
+climbtheswissapps
+
+##Files
+
+![alt text](task_table.png) ![alt text](task_table_schema.png) ![alt text](steps.png) ![alt text](repo.png) ![alt text](Diagnostics.png) ![alt text](<in browser after k8s.png>) ![alt text](<get pods.png>)
+
+######NOTES#####
+
+PS C:\Users\mtgra\Desktop\Masters\SP26\Dev Ops Cyber Physical Systems\lecture5-dockerk8s-demo> 1..5 | ForEach-Object { $j = Start-Job { kubectl port-forward svc/lecture5-web-service 63501:80 }; Start-Sleep -s 2; (Invoke-WebRequest "http://127.0.0.1:63501/info" -UseBasicParsing).Content; Stop-Job $j; Remove-Job $j }
+{
+  "app": "DevOps Lecture 5 Demo",
+  "environment": {
+    "DB_HOST": "db",
+    "DB_NAME": "taskdb",
+    "DB_PORT": "5432",
+    "REDIS_HOST": "redis",
+    "REDIS_PORT": 6379
+  },
+  "message": "Configuration from environment variables!",
+  "pod_name": "lecture5-web-6955d69b96-4qkv9",
+  "version": "1.0.0"
+}
+
+{
+  "app": "DevOps Lecture 5 Demo",
+  "environment": {
+    "DB_HOST": "db",
+    "DB_NAME": "taskdb",
+    "DB_PORT": "5432",
+    "REDIS_HOST": "redis",
+    "REDIS_PORT": 6379
+  },
+  "message": "Configuration from environment variables!",
+  "pod_name": "lecture5-web-6955d69b96-4qkv9",
+  "version": "1.0.0"
+}
+
+{
+  "app": "DevOps Lecture 5 Demo",
+  "environment": {
+    "DB_HOST": "db",
+    "DB_NAME": "taskdb",
+    "DB_PORT": "5432",
+    "REDIS_HOST": "redis",
+    "REDIS_PORT": 6379
+  },
+  "message": "Configuration from environment variables!",
+  "pod_name": "lecture5-web-6955d69b96-4qkv9",
+  "version": "1.0.0"
+}
+
+{
+  "app": "DevOps Lecture 5 Demo",
+  "environment": {
+    "DB_HOST": "db",
+    "DB_NAME": "taskdb",
+    "DB_PORT": "5432",
+    "REDIS_HOST": "redis",
+    "REDIS_PORT": 6379
+  },
+  "message": "Configuration from environment variables!",
+  "pod_name": "lecture5-web-6955d69b96-4qkv9",
+  "version": "1.0.0"
+}
+
+{
+  "app": "DevOps Lecture 5 Demo",
+  "environment": {
+    "DB_HOST": "db",
+    "DB_NAME": "taskdb",
+    "DB_PORT": "5432",
+    "REDIS_HOST": "redis",
+    "REDIS_PORT": 6379
+  },
+  "message": "Configuration from environment variables!",
+  "pod_name": "lecture5-web-6955d69b96-4qkv9",
+  "version": "1.0.0"
+}
+
+
+
+
+
+
+
+PS C:\Users\mtgra\Desktop\Masters\SP26\Dev Ops Cyber Physical Systems\lecture5-dockerk8s-demo> kubectl get pods
+NAME                            READY   STATUS    RESTARTS   AGE
+lecture5-web-6955d69b96-4qkv9   1/1     Running   0          14m
+lecture5-web-6955d69b96-575cl   1/1     Running   0          14m
+lecture5-web-6955d69b96-7bzt9   1/1     Running   0          14m
+lecture5-web-6955d69b96-kv8kq   1/1     Running   0          14m
+lecture5-web-6955d69b96-s25cx   1/1     Running   0          14m
+postgres-7959464869-srhj2       1/1     Running   0          34m
+redis-5d49c95645-brhrw          1/1     Running   0          34m
+PS C:\Users\mtgra\Desktop\Masters\SP26\Dev Ops Cyber Physical Systems\lecture5-dockerk8s-demo>
+
+
+
+I can’t get it to pass new requests into different pods locally, though they are available to serve. If you can show this in class that’d be super helpful.
+
+
+K8s distributes round robin between the pods
+
+
+
+
+
+PS C:\Users\mtgra\Desktop\Masters\SP26\Dev Ops Cyber Physical Systems\lecture5-dockerk8s-demo> kubectl get pods
+NAME                            READY   STATUS    RESTARTS   AGE
+lecture5-web-6955d69b96-4qkv9   1/1     Running   0          17m
+lecture5-web-6955d69b96-575cl   1/1     Running   0          17m
+lecture5-web-6955d69b96-7bzt9   1/1     Running   0          17m
+lecture5-web-6955d69b96-kv8kq   1/1     Running   0          17m
+lecture5-web-6955d69b96-s25cx   1/1     Running   0          17m
+postgres-7959464869-srhj2       1/1     Running   0          36m
+redis-5d49c95645-brhrw          1/1     Running   0          36m
+PS C:\Users\mtgra\Desktop\Masters\SP26\Dev Ops Cyber Physical Systems\lecture5-dockerk8s-demo> kubectl delete pod lecture5-web-6955d69b96-4qkv9
+pod "lecture5-web-6955d69b96-4qkv9" deleted from default namespace
+PS C:\Users\mtgra\Desktop\Masters\SP26\Dev Ops Cyber Physical Systems\lecture5-dockerk8s-demo> kubectl get pods
+NAME                            READY   STATUS    RESTARTS   AGE
+lecture5-web-6955d69b96-575cl   1/1     Running   0          17m
+lecture5-web-6955d69b96-7bzt9   1/1     Running   0          17m
+lecture5-web-6955d69b96-kv8kq   1/1     Running   0          17m
+lecture5-web-6955d69b96-pnv82   1/1     Running   0          2s
+lecture5-web-6955d69b96-s25cx   1/1     Running   0          17m
+postgres-7959464869-srhj2       1/1     Running   0          36m
+redis-5d49c95645-brhrw          1/1     Running   0          36m
+PS C:\Users\mtgra\Desktop\Masters\SP26\Dev Ops Cyber Physical Systems\lecture5-dockerk8s-demo>
+
+
+
+Self-healing is critical because it ensures high availability and fault tolerance without requiring manual intervention. If a container crashes or a node fails, Kubernetes automatically detects the discrepancy between the desired and actual state, and immediately starts spinning up new instances to maintain service uptime. This automated recovery minimizes downtime and ensures the application remains resilient under unpredictable conditions.
+
+
+######/NOTES######
+
+
+
 > DevOps for Cyber-Physical Systems | University of Bern
 
 A Task Manager app demonstrating Docker containerization and Kubernetes orchestration.
